@@ -8,30 +8,49 @@
 <script src="https://unpkg.com/jspdf@2.4.Wdist/jspdf.umd.min.js"></script>
 <style>
   :root{
-    --card-bg: rgba(255,255,255,0.85);
-    --card-border: #f3d7e8;
-    --accent: #d86ca4;
-    --accent-dark: #9e4378;
-    --text: #523c4d;
-  }
-  body{
-    margin: 0;
-    font-family: "Segoe UI", Tahoma, sans-serif;
-    overflow: hidden;
-    position: relative;
-    height: 100vh;
-    background: linear-gradient(to top, #f8bbd0, #f48fb1);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-  }
+  --card-bg: #f0f7ff;        
+  --card-border: #d0e0f0;   
+  --accent: #4a6fa5;        
+  --accent-dark: #3a5a80;  
+  --text: #2d3748;          
+}
+body {
+  margin: 0;
+  font-family: "Segoe UI", Tahoma, sans-serif;
+  overflow: hidden;
+  position: relative;
+}
+.fondo-fijo {
+  position: fixed;
+  top: 0; left: 0;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(to bottom, #4a6fa5, #d0e4ff);
+  z-index: 0;
+  pointer-events: none;
+}
+
+.contenedor-scroll {
+  width: 100%;
+  height: 100vh;
+  overflow-y: auto;
+  -ms-overflow-style: none;  
+  scrollbar-width: none;    
+  display: flex;
+  justify-content: center;  
+  padding: 20px 10px;        
+}
+
+.contenedor-scroll::-webkit-scrollbar {
+  display: none;
+}
   #burbujas{
     position: absolute;
     top: 0; left: 0;
     width: 100%;
     height: 100%;
     overflow: hidden;
-    z-index: 0;
+    z-index: 1;
   }
   .burbuja{
     position: absolute;
@@ -41,11 +60,11 @@
     top: var(--top);
     border-radius: 50%;
     background: radial-gradient(circle at 30% 30%,
-                rgba(255,255,255,0.9),
-                rgba(255,255,255,0.4) 45%,
-                rgba(255,192,203,0.25) 70%,
-                rgba(255,182,193,0) 85%);
-    border: 1px solid rgba(255,255,255,0.7);
+                rgba(255,255,255,0.95),
+               rgba(240, 248, 255, 0.7) 45%,
+                rgba(220, 235, 255, 0.4) 70%,
+                rgba(200, 225, 255, 0) 85%);
+  border: 1px solid rgba(220, 235, 255, 0.6);
     box-shadow: 0 0 12px rgba(255,255,255,0.4),
                 inset 0 0 8px rgba(255,220,230,0.4);
     animation: mover var(--dur) linear infinite alternate;
@@ -56,19 +75,17 @@
     50%  { transform: translate(var(--drift-x), var(--drift-y)) scale(1.05); }
     100% { transform: translate(0, 0) scale(1); }
   }
-  .diario{
-    width: min(95vw, 1000px);
-    max-height: 85vh;
-    background: var(--card-bg);
-    backdrop-filter: blur(6px);
-    border: 1px solid var(--card-border);
-    border-radius: 18px;
-    box-shadow: 0 10px 28px rgba(0,0,0,0.12);
-    padding: 40px 50px;
-    position: relative;
-    z-index: 2;
-    overflow: hidden;
-  }
+ .diario {
+  width: min(95vw, 1000px);
+  background: var(--card-bg);
+  backdrop-filter: blur(6px);
+  border: 1px solid var(--card-border);
+  border-radius: 18px;
+  box-shadow: 0 10px 28px rgba(0,0,0,0.12);
+  padding: 30px 20px;
+  position: relative;
+  z-index: 3;
+}
   h1{
     margin: 0 0 16px 0;
     text-align: center;
@@ -80,31 +97,32 @@
   .sub{
     text-align: center;
     font-size: 1rem;
-    color: #7c5a6b;
+    color: #4a6fa5;
     margin-bottom: 18px;
   }
   .item{ margin-bottom: 18px; }
-  textarea.respuesta {
-    width: 100%;
-    height: 3.2em;
-    resize: none;
-    padding: 8px;
-    border: none;
-    border-radius: 10px;
-    font-size: 1rem;
-    background: #fff8;
-    font-family: "Segoe UI", Tahoma, sans-serif;
-  }
-  .readonly {
-    width: 100%;
-    padding: 15px;
-    background: #fff8;
-    border-radius: 12px;
-    font-size: 1rem;
-    line-height: 1.6;
-    color: var(--text);
-  }
-
+ textarea.respuesta {
+  width: 100%;
+  height: 3.2em;
+  resize: none;
+  padding: 15px; 
+  border: none;
+  border-radius: 12px; 
+  font-size: 1rem;
+  background: #fff8;
+  font-family: "Segoe UI", Tahoma, sans-serif;
+  box-sizing: border-box;
+}
+.readonly {
+  width: 100%;
+  padding: 15px;
+  background: #fff8;
+  border-radius: 12px;
+  font-size: 1rem;
+  line-height: 1.6;
+  color: var(--text);
+  box-sizing: border-box;
+}
    .btn-pdf {
       background: var(--accent);
       color: white;
@@ -115,7 +133,7 @@
       cursor: pointer;
       display: block;
       margin: 20px auto 0;
-      box-shadow: 0 4px 12px rgba(216, 108, 164, 0.3);
+      box-shadow: 0 4px 12px rgba(74, 111, 165, 0.25);
       font-family: "Segoe UI", Tahoma, sans-serif;
       transition: transform 0.2s, background 0.2s;
     }
@@ -123,36 +141,65 @@
       background: var(--accent-dark);
       transform: translateY(-2px);
     }
+
+@media (max-width: 600px) {
+  h1 {
+    font-size: 2.4em;   }
+  .sub {
+    font-size: 0.95rem;
+  }
+  textarea.respuesta {
+     height: 2.8em;
+    padding: 12px; 
+    border-radius: 10px;
+  }
+  .readonly {
+    font-size: 0.95rem;
+    padding: 12px;
+  }
+  .btn-pdf {
+    padding: 10px 20px;
+    font-size: 0.95rem;
+  }
+}
+.readonly p {
+  margin: 0 0 16px 0; 
+  line-height: 1.6;
+}
+.readonly p:last-child {
+  margin-bottom: 0;
+}
+
 </style>
 </head>
 <body>
-<div id="burbujas"></div>
-<div class="diario">
+  <div class="fondo-fijo">
+    <div id="burbujas"></div>
+  </div>
+  <div class="contenedor-scroll">
+    <div class="diario">  
   <h1>Manifestación Diaria</h1>
   <div class="sub">Escribe 3 gratitudes que ya están ocurriendo ✨</div>
   <div class="item">
-    <textarea class="respuesta" placeholder="Me siento agradecida porque...">
-</textarea>
-  </div>
- <div class="item">
-    <textarea class="respuesta" placeholder="Gracias porque ya tengo...">
-</textarea>
-  </div>
- <div class="item">
-    <textarea class="respuesta" placeholder="Estoy agradecida porque...">
-</textarea>
-  </div>
+  <textarea id="gratitud1" class="respuesta" placeholder="Escribe tu gratitud de hoy..."></textarea>
+</div>
+<div class="item">
+  <textarea id="gratitud2" class="respuesta" placeholder="Gracias porque ya tengo..."></textarea>
+</div>
+<div class="item">
+  <textarea id="gratitud3" class="respuesta" placeholder="Estoy agradecid@ porque....."></textarea>
+</div>
 
  <button id="exportar-pdf" class="btn-pdf">📥 Descargar mi manifestación</button><br><br>
 
 <div class="sub">Así escribo yo mi gratitud ✨</div>
   <div class="item">
     <div class="readonly">
-   ✔ Me siento agradecida porque estoy conociendo lugares maravillosos y viviendo experiencias mágicas alrededor del mundo.<br><br>
-   ✔  Gracias porque mi cuerpo se siente fuerte, lleno de energía y vitalidad.<br><br>
-   ✔  Estoy agradecida porque domino la programación de una forma creativa y práctica, y construyo proyectos digitales que aportan valor y generan nuevas oportunidades.<br><br>
-   ✔  Gracias porque vivo cada día en gratitud, amor y plenitud, disfrutando de mi camino y de cada pequeño logro.<br><br>
-   ✔   Gracias porque comparto mi vida con mi pareja en amor, complicidad y alegría, y juntos construimos recuerdos hermosos que nos llenan de plenitud.
+   <p>✔ Me siento agradecida porque estoy conociendo lugares maravillosos y viviendo experiencias mágicas alrededor del mundo.</p>
+   <p>✔  Gracias porque mi cuerpo se siente fuerte, lleno de energía y vitalidad.</p>
+   <p>✔  Estoy agradecida porque domino la programación de una forma creativa y práctica, y construyo proyectos digitales que aportan valor y generan nuevas oportunidades.</p>
+   <p>✔  Gracias porque vivo cada día en gratitud, amor y plenitud, disfrutando de mi camino y de cada pequeño logro.</p>
+   <p>✔   Gracias porque comparto mi vida con mi pareja en amor, complicidad y alegría, y juntos construimos recuerdos hermosos que nos llenan de plenitud.</p>
     </div>
   </div>
 </div>
