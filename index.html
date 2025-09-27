@@ -1,0 +1,237 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Manifestación Diaria</title>
+<link href="https://fonts.googleapis.com/css2?family=Great+Vibes&display=swap" rel="stylesheet">
+<script src="https://unpkg.com/jspdf@2.4.Wdist/jspdf.umd.min.js"></script>
+<style>
+  :root{
+    --card-bg: rgba(255,255,255,0.85);
+    --card-border: #f3d7e8;
+    --accent: #d86ca4;
+    --accent-dark: #9e4378;
+    --text: #523c4d;
+  }
+  body{
+    margin: 0;
+    font-family: "Segoe UI", Tahoma, sans-serif;
+    overflow: hidden;
+    position: relative;
+    height: 100vh;
+    background: linear-gradient(to top, #f8bbd0, #f48fb1);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  #burbujas{
+    position: absolute;
+    top: 0; left: 0;
+    width: 100%;
+    height: 100%;
+    overflow: hidden;
+    z-index: 0;
+  }
+  .burbuja{
+    position: absolute;
+    width: var(--size);
+    height: var(--size);
+    left: var(--left);
+    top: var(--top);
+    border-radius: 50%;
+    background: radial-gradient(circle at 30% 30%,
+                rgba(255,255,255,0.9),
+                rgba(255,255,255,0.4) 45%,
+                rgba(255,192,203,0.25) 70%,
+                rgba(255,182,193,0) 85%);
+    border: 1px solid rgba(255,255,255,0.7);
+    box-shadow: 0 0 12px rgba(255,255,255,0.4),
+                inset 0 0 8px rgba(255,220,230,0.4);
+    animation: mover var(--dur) linear infinite alternate;
+    opacity: 1;
+  }
+  @keyframes mover {
+    0%   { transform: translate(0, 0) scale(1); }
+    50%  { transform: translate(var(--drift-x), var(--drift-y)) scale(1.05); }
+    100% { transform: translate(0, 0) scale(1); }
+  }
+  .diario{
+    width: min(95vw, 1000px);
+    max-height: 85vh;
+    background: var(--card-bg);
+    backdrop-filter: blur(6px);
+    border: 1px solid var(--card-border);
+    border-radius: 18px;
+    box-shadow: 0 10px 28px rgba(0,0,0,0.12);
+    padding: 40px 50px;
+    position: relative;
+    z-index: 2;
+    overflow: hidden;
+  }
+  h1{
+    margin: 0 0 16px 0;
+    text-align: center;
+    font-family: 'Great Vibes', cursive;
+    font-size: 3.2em;
+    color: var(--accent-dark);
+    text-shadow: 0 2px 5px rgba(0,0,0,0.12);
+  }
+  .sub{
+    text-align: center;
+    font-size: 1rem;
+    color: #7c5a6b;
+    margin-bottom: 18px;
+  }
+  .item{ margin-bottom: 18px; }
+  textarea.respuesta {
+    width: 100%;
+    height: 3.2em;
+    resize: none;
+    padding: 8px;
+    border: none;
+    border-radius: 10px;
+    font-size: 1rem;
+    background: #fff8;
+    font-family: "Segoe UI", Tahoma, sans-serif;
+  }
+  .readonly {
+    width: 100%;
+    padding: 15px;
+    background: #fff8;
+    border-radius: 12px;
+    font-size: 1rem;
+    line-height: 1.6;
+    color: var(--text);
+  }
+
+   .btn-pdf {
+      background: var(--accent);
+      color: white;
+      border: none;
+      padding: 12px 24px;
+      border-radius: 12px;
+      font-size: 1rem;
+      cursor: pointer;
+      display: block;
+      margin: 20px auto 0;
+      box-shadow: 0 4px 12px rgba(216, 108, 164, 0.3);
+      font-family: "Segoe UI", Tahoma, sans-serif;
+      transition: transform 0.2s, background 0.2s;
+    }
+    .btn-pdf:hover {
+      background: var(--accent-dark);
+      transform: translateY(-2px);
+    }
+</style>
+</head>
+<body>
+<div id="burbujas"></div>
+<div class="diario">
+  <h1>Manifestación Diaria</h1>
+  <div class="sub">Escribe 3 gratitudes que ya están ocurriendo ✨</div>
+  <div class="item">
+    <textarea class="respuesta" placeholder="Me siento agradecida porque...">
+</textarea>
+  </div>
+ <div class="item">
+    <textarea class="respuesta" placeholder="Gracias porque ya tengo...">
+</textarea>
+  </div>
+ <div class="item">
+    <textarea class="respuesta" placeholder="Estoy agradecida porque...">
+</textarea>
+  </div>
+
+ <button id="exportar-pdf" class="btn-pdf">📥 Descargar mi manifestación</button><br><br>
+
+<div class="sub">Así escribo yo mi gratitud ✨</div>
+  <div class="item">
+    <div class="readonly">
+   ✔ Me siento agradecida porque estoy conociendo lugares maravillosos y viviendo experiencias mágicas alrededor del mundo.<br><br>
+   ✔  Gracias porque mi cuerpo se siente fuerte, lleno de energía y vitalidad.<br><br>
+   ✔  Estoy agradecida porque domino la programación de una forma creativa y práctica, y construyo proyectos digitales que aportan valor y generan nuevas oportunidades.<br><br>
+   ✔  Gracias porque vivo cada día en gratitud, amor y plenitud, disfrutando de mi camino y de cada pequeño logro.<br><br>
+   ✔   Gracias porque comparto mi vida con mi pareja en amor, complicidad y alegría, y juntos construimos recuerdos hermosos que nos llenan de plenitud.
+    </div>
+  </div>
+</div>
+<script>
+  const cont = document.getElementById('burbujas');
+
+  function crearBurbuja() {
+    const b = document.createElement('span');
+    b.className = 'burbuja';
+
+      const size = Math.floor(150 + Math.random() * 80) + 'px';
+      const left = Math.floor(Math.random() * 100 + 5) + '%';
+      const top = Math.floor(Math.random() * 90 + 10) + '%';
+      const dur = (8 + Math.random() * 10).toFixed(2) + 's';
+      const driftX = (Math.random() * 80 - 15).toFixed(2) + 'px';
+      const driftY = (Math.random() * 100 - 10).toFixed(2) + 'px';
+
+      b.style.setProperty('--size', size);
+      b.style.setProperty('--left', left);
+      b.style.setProperty('--top', top);
+      b.style.setProperty('--dur', dur);
+      b.style.setProperty('--drift-x', driftX);
+      b.style.setProperty('--drift-y', driftY);
+
+    cont.appendChild(b);
+  }
+
+  for(let i = 0; i < 15; i++) {
+      crearBurbuja();
+    }
+
+    document.getElementById('exportar-pdf').addEventListener('click', () => {
+      const g1 = document.getElementById('gratitud1').value.trim();
+      const g2 = document.getElementById('gratitud2').value.trim();
+      const g3 = document.getElementById('gratitud3').value.trim();
+      const gratitudes = [g1, g2, g3].filter(g => g !== '');
+
+      if (gratitudes.length === 0) {
+        alert('Por favor, escribe al menos una gratitud antes de descargar.');
+        return;
+      }
+
+    
+    const doc = new jsPDF({
+        orientation: 'portrait',
+        unit: 'mm',
+        format: 'a5'
+      });
+
+      doc.setFont('helvetica', 'bold');
+      doc.setFontSize(18);
+      doc.setTextColor(158, 67, 120);
+      doc.text('Mi Manifestación de Hoy', 105, 20, { align: 'center' });
+
+      doc.setFont('helvetica', 'normal');
+      doc.setFontSize(12);
+      doc.setTextColor(82, 60, 77);
+
+      let y = 40;
+      gratitudes.forEach(linea => {
+        const text = '✔ ' + linea;
+        const lines = doc.splitTextToSize(text, 180);
+        lines.forEach(l => {
+          if (y > 250) {
+            doc.addPage();
+            y = 20;
+          }
+          doc.text(l, 15, y);
+          y += 8;
+        });
+        y += 4;
+      });
+
+      doc.setFontSize(10);
+      doc.setTextColor(180, 180, 180);
+      doc.text('— Manifestado con gratitud', 105, y + 15, { align: 'center' });
+
+      doc.save('mi-manifestacion.pdf');
+    });
+</script>
+</body>
+</html>
