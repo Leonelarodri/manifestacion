@@ -5,8 +5,15 @@
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 <title>Manifestación Diaria</title>
 <link href="https://fonts.googleapis.com/css2?family=Great+Vibes&display=swap" rel="stylesheet">
-<script src="https://unpkg.com/jspdf@2.4.Wdist/jspdf.umd.min.js"></script>
+<script src="https://html2canvas.hertzen.com/dist/html2canvas.min.js"></script>
 <style>
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
   :root{
   --card-bg: #f0f7ff;        
   --card-border: #d0e0f0;   
@@ -85,6 +92,9 @@ body {
   padding: 30px 20px;
   position: relative;
   z-index: 3;
+  overflow: hidden;
+  display: flow-root;
+  min-height: calc(100vh - 40px); 
 }
   h1{
     margin: 0 0 16px 0;
@@ -103,15 +113,17 @@ body {
   .item{ margin-bottom: 18px; }
  textarea.respuesta {
   width: 100%;
-  height: 3.2em;
-  resize: none;
-  padding: 15px; 
+  min-height: 60px; 
+  resize: vertical;
+  padding: 15px;
   border: none;
-  border-radius: 12px; 
+  border-radius: 12px;
   font-size: 1rem;
   background: #fff8;
   font-family: "Segoe UI", Tahoma, sans-serif;
   box-sizing: border-box;
+  line-height: 1.5;
+  overflow-y: auto; 
 }
 .readonly {
   width: 100%;
@@ -143,35 +155,62 @@ body {
       transform: translateY(-2px);
     }
 
+.firma {
+  text-align: right;
+  margin-top: 24px;
+  margin-bottom: 20px;
+  font-size: 0.95rem;
+  color: var(--accent-dark);
+  font-style: italic;
+  width: 100%;
+}
+
 @media (max-width: 600px) {
   h1 {
-    font-size: 2.4em;   }
+    font-size: 2.4em;
+  }
   .sub {
     font-size: 0.95rem;
   }
-  textarea.respuesta {
-     height: 2.8em;
-    padding: 12px; 
-    border-radius: 10px;
+  .firma {
+    font-size: 0.9rem;
+    margin-top: 20px;
   }
-  .readonly {
-    font-size: 0.95rem;
+  textarea.respuesta {
+    min-height: 50px; 
     padding: 12px;
+    border-radius: 10px;
+    font-size: 0.95rem;
+    line-height: 1.5;
+  }
+  .readonly p {
+    margin: 0 0 16px 0;
+    line-height: 1.6;
+    overflow-wrap: break-word;
+    word-break: break-word;
   }
   .btn-pdf {
     padding: 10px 20px;
     font-size: 0.95rem;
   }
 }
-.readonly p {
-  margin: 0 0 16px 0; 
-  line-height: 1.6;
-}
-.readonly p:last-child {
-  margin-bottom: 0;
+.corazon {
+  margin-left: 6px;
+  display: inline-block; 
+  animation: latido 1.8s ease-in-out infinite;
+  transform-origin: center; 
 }
 
-</style>
+@keyframes latido {
+  0%, 100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+  50% {
+    transform: scale(1.3); 
+    opacity: 0.9;
+  }
+}</style>
 </head>
 <body>
   <div class="fondo-fijo">
@@ -180,7 +219,6 @@ body {
   <div class="contenedor-scroll">
     <div class="diario">  
   <h1>Manifestación Diaria</h1>
-  <div class="sub">Escribe 3 gratitudes que ya están ocurriendo ✨</div>
   <div class="item">
   <textarea id="gratitud1" class="respuesta" placeholder="Escribe tu gratitud de hoy..."></textarea>
 </div>
@@ -196,13 +234,20 @@ body {
 <div class="sub">Así escribo yo mi gratitud ✨</div>
   <div class="item">
     <div class="readonly">
-   <p>✔ Me siento agradecida porque estoy conociendo lugares maravillosos y viviendo experiencias mágicas alrededor del mundo.</p>
    <p>✔  Gracias porque mi cuerpo se siente fuerte, lleno de energía y vitalidad.</p>
    <p>✔  Estoy agradecida porque domino la programación de una forma creativa y práctica, y construyo proyectos digitales que aportan valor y generan nuevas oportunidades.</p>
-   <p>✔  Gracias porque vivo cada día en gratitud, amor y plenitud, disfrutando de mi camino y de cada pequeño logro.</p>
    <p>✔   Gracias porque comparto mi vida con mi pareja en amor, complicidad y alegría, y juntos construimos recuerdos hermosos que nos llenan de plenitud.</p>
     </div>
   </div>
+
+<div class="firma">
+  Por Leonela Rodríguez <span class="corazon">💙</span>
+</div>
+<div id="captura" style="display:none; padding: 30px; background: white; width: 100%; max-width: 600px; margin: 0 auto; border-radius: 12px; font-family: Arial, sans-serif;">
+  <h2 style="text-align: center; color: #4a6fa5; margin-bottom: 20px;">Mi Manifestación de Hoy</h2>
+  <div id="contenido-captura" style="font-size: 18px; line-height: 1.6; color: #2d3748;"></div>
+  <p style="text-align: right; margin-top: 30px; font-style: italic; color: #3a5a80;">— Manifestado con gratitud</p>
+</div>
 </div>
 <script>
   const cont = document.getElementById('burbujas');
@@ -232,54 +277,36 @@ body {
       crearBurbuja();
     }
 
-    document.getElementById('exportar-pdf').addEventListener('click', () => {
-      const g1 = document.getElementById('gratitud1').value.trim();
-      const g2 = document.getElementById('gratitud2').value.trim();
-      const g3 = document.getElementById('gratitud3').value.trim();
-      const gratitudes = [g1, g2, g3].filter(g => g !== '');
+      document.getElementById('exportar-pdf').addEventListener('click', () => {
+    const g1 = document.getElementById('gratitud1').value.trim();
+    const g2 = document.getElementById('gratitud2').value.trim();
+    const g3 = document.getElementById('gratitud3').value.trim();
+    const gratitudes = [g1, g2, g3].filter(g => g !== '');
 
-      if (gratitudes.length === 0) {
-        alert('Por favor, escribe al menos una gratitud antes de descargar.');
-        return;
-      }
+    if (gratitudes.length === 0) {
+      alert('Por favor, escribe al menos una gratitud.');
+      return;
+    }
 
-    
-    const doc = new jsPDF({
-        orientation: 'portrait',
-        unit: 'mm',
-        format: 'a5'
+    // Mostrar el contenedor de captura
+    const contenido = gratitudes.map(g => `✔ ${g}`).join('<br><br>');
+    document.getElementById('contenido-captura').innerHTML = contenido;
+    document.getElementById('captura').style.display = 'block';
+
+    // Esperar un momento para que se renderice
+    setTimeout(() => {
+      html2canvas(document.getElementById('captura')).then(canvas => {
+        // Ocultar el contenedor
+        document.getElementById('captura').style.display = 'none';
+        
+        // Crear enlace de descarga
+        const link = document.createElement('a');
+        link.download = 'mi-manifestacion.png';
+        link.href = canvas.toDataURL('image/png');
+        link.click();
       });
-
-      doc.setFont('helvetica', 'bold');
-      doc.setFontSize(18);
-      doc.setTextColor(158, 67, 120);
-      doc.text('Mi Manifestación de Hoy', 105, 20, { align: 'center' });
-
-      doc.setFont('helvetica', 'normal');
-      doc.setFontSize(12);
-      doc.setTextColor(82, 60, 77);
-
-      let y = 40;
-      gratitudes.forEach(linea => {
-        const text = '✔ ' + linea;
-        const lines = doc.splitTextToSize(text, 180);
-        lines.forEach(l => {
-          if (y > 250) {
-            doc.addPage();
-            y = 20;
-          }
-          doc.text(l, 15, y);
-          y += 8;
-        });
-        y += 4;
-      });
-
-      doc.setFontSize(10);
-      doc.setTextColor(180, 180, 180);
-      doc.text('— Manifestado con gratitud', 105, y + 15, { align: 'center' });
-
-      doc.save('mi-manifestacion.pdf');
-    });
+    }, 300);
+  });
 </script>
 </body>
 </html>
